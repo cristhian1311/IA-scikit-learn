@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Tree -->
+    <record id="view_sale_order_tree" model="ir.ui.view">
+        <field name="name">sales.ai.prediction.tree</field>
+        <field name="model">sales.ai.prediction</field>
+        <field name="arch" type="xml">
+            <tree string="Pedidos de Venta">
+                <field name="date"/>
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="total_price"/>
+                <field name="state"/>
+                <button name="action_confirm" 
+                        type="object" 
+                        string="Confirmar" 
+                        attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Form -->
+    <record id="view_sale_order_form" model="ir.ui.view">
+        <field name="name">sales.ai.prediction.form</field>
+        <field name="model">sales.ai.prediction</field>
+        <field name="arch" type="xml">
+            <form string="Pedido de Venta">
+                <header>
+                    <button name="action_confirm" 
+                            string="Confirmar Venta" 
+                            type="object" 
+                            class="btn-primary" 
+                            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="date"/>
+                    </group>
+                    <group>
+                        <field name="product_id"/>
+                        <field name="quantity"/>
+                        <field name="unit_price" readonly="1"/>
+                        <field name="total_price" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Form del Wizard de Predicción -->
+    <record id="view_sale_prediction_wizard_form" model="ir.ui.view">
+        <field name="name">sale.prediction.wizard.form</field>
+        <field name="model">sale.prediction.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Predicción de Ventas con IA">
+                <sheet>
+                    <!-- 🤖 WIDGET DEL ROBOT - ESTO ES LO NUEVO -->
+                    <field name="robot_display" widget="robot_assistant" nolabel="1"/>
+                    
+                    <div class="oe_title">
+                        <h1>🔮 Predicción de Ventas con IA</h1>
+                    </div>
+                    
+                    <separator string="Datos Históricos (últimos 6 meses)"/>
+                    
+                    <group>
+                        <group>
+                            <field name="historical_total" widget="monetary"/>
+                            <field name="historical_avg" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="historical_quantity"/>
+                            <field name="trend" 
+                                   decoration-success="trend == 'creciente'"
+                                   decoration-danger="trend == 'decreciente'"
+                                   decoration-info="trend == 'estable'"/>
+                        </group>
+                    </group>
+                    
+                    <separator string="Predicción Próximos 30 Días"/>
+                    
+                    <group>
+                        <group>
+                            <field name="total_predicted" widget="monetary"/>
+                            <field name="quantity_predicted"/>
+                        </group>
+                        <group>
+                            <field name="avg_daily" widget="monetary"/>
+                            <field name="growth_rate" widget="percentage"/>
+                        </group>
+                    </group>
+                    
+                    <separator string="Detalle Primeros 7 Días"/>
+                    
+                    <field name="prediction_line_ids" nolabel="1">
+                        <tree create="false" delete="false" edit="false">
+                            <field name="date"/>
+                            <field name="predicted_amount" widget="monetary" sum="Total"/>
+                            <field name="predicted_quantity" sum="Total Unidades"/>
+                        </tree>
+                    </field>
+                    
+                    <div class="alert alert-info" role="alert">
+                        <p>
+                            ℹ️ <strong>Nota:</strong> Las predicciones se basan en el análisis de tendencias históricas 
+                            usando Machine Learning (Regresión Lineal). Los resultados son estimaciones 
+                            estadísticas y pueden variar según factores externos del mercado.
+                        </p>
+                    </div>
+                </sheet>
+                <footer>
+                    <button string="Cerrar" class="btn-primary" special="cancel"/>
+                    <button string="Exportar Datos" name="action_export_predictions" type="object" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Form del Wizard de Recomendaciones -->
+    <record id="view_product_recommendation_wizard_form" model="ir.ui.view">
+        <field name="name">product.recommendation.wizard.form</field>
+        <field name="model">product.recommendation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Recomendaciones de Productos">
+                <sheet>
+                    <field name="has_historical_data" invisible="1"/>
+                    <div class="oe_title">
+                        <h1>🛒 Recomendaciones de Productos para Comprar</h1>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="current_month_name" readonly="1"/>
+                            <field name="season_name" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="festivities" readonly="1" widget="text"/>
+                        </group>
+                    </group>
+                    
+                    <separator string="📝 Descripción de Temporada"/>
+                    <field name="season_description" readonly="1" widget="text"/>
+                    
+                    <separator string="✨ Recomendaciones Basadas en Datos Históricos" attrs="{'invisible': [('has_historical_data', '=', False)]}"/>
+                    <separator string="✨ Recomendaciones Estacionales" attrs="{'invisible': [('has_historical_data', '=', True)]}"/>
+                    
+                    <field name="recommendation_line_ids" nolabel="1">
+                        <tree create="false" delete="false" edit="false">
+                            <field name="rank" string="#"/>
+                            <field name="recommendation_type" invisible="1"/>
+                            <field name="product_id" attrs="{'invisible': [('recommendation_type', '!=', 'historical')]}"/>
+                            <field name="product_name" attrs="{'invisible': [('recommendation_type', '!=', 'seasonal')]}"/>
+                            <field name="category" attrs="{'invisible': [('recommendation_type', '!=', 'seasonal')]}"/>
+                            <field name="quantity_sold" attrs="{'invisible': [('recommendation_type', '!=', 'historical')]}"/>
+                            <field name="revenue" widget="monetary" attrs="{'invisible': [('recommendation_type', '!=', 'historical')]}"/>
+                            <field name="reason" attrs="{'invisible': [('recommendation_type', '!=', 'seasonal')]}"/>
+                        </tree>
+                    </field>
+                    
+                    <div class="alert alert-warning" role="alert" attrs="{'invisible': [('has_historical_data', '=', True)]}">
+                        <p>
+                            ⚠️ <strong>Sin datos históricos:</strong> No hay ventas del mismo mes del año anterior. 
+                            Las recomendaciones se basan únicamente en la temporada y festividades del mes actual.
+                        </p>
+                    </div>
+                    
+                    <div class="alert alert-success" role="alert" attrs="{'invisible': [('has_historical_data', '=', False)]}">
+                        <p>
+                            ✅ <strong>Recomendaciones personalizadas:</strong> Basadas en el historial de ventas 
+                            del mismo mes del año pasado y en las festividades actuales.
+                        </p>
+                    </div>
+                </sheet>
+                <footer>
+                    <button string="Cerrar" class="btn-primary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para abrir lista de ventas -->
+    <record id="action_sale_order" model="ir.actions.act_window">
+        <field name="name">Ventas</field>
+        <field name="res_model">sales.ai.prediction</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea tu primera venta
+            </p>
+            <p>
+                Registra las ventas de tus productos y utiliza la predicción con IA 
+                para anticipar tendencias futuras.
+            </p>
+        </field>
+    </record>
+
+    <!-- Acción server para predicción de ventas -->
+    <record id="action_predict_sales_server" model="ir.actions.server">
+        <field name="name">Predecir Ventas Futuras</field>
+        <field name="model_id" ref="model_sales_ai_prediction"/>
+        <field name="state">code</field>
+        <field name="code">
+action = model.action_predict_sales_from_menu()
+        </field>
+    </record>
+
+    <!-- Acción server para recomendaciones de productos -->
+    <record id="action_recommend_products_server" model="ir.actions.server">
+        <field name="name">¿Qué Comprar Este Mes?</field>
+        <field name="model_id" ref="model_sales_ai_prediction"/>
+        <field name="state">code</field>
+        <field name="code">
+action = model.action_recommend_products_from_menu()
+        </field>
+    </record>
+
+    <!-- Menús -->
+    <!-- Menú Ventas (independiente) -->
+    <menuitem id="menu_sales_group" 
+              name="📊 Ventas" 
+              sequence="20"/>
+    
+    <menuitem id="menu_sales_orders" 
+              name="Pedidos de Venta" 
+              parent="menu_sales_group" 
+              action="action_sale_order" 
+              sequence="10"/>
+    
+    <!-- Menú independiente para IA y Predicción -->
+    <menuitem id="menu_ai_prediction" 
+              name="🤖 Inteligencia Artificial" 
+              sequence="1"/>
+    
+    <menuitem id="menu_sales_predict_future" 
+              name="Predecir Ventas Futuras" 
+              parent="menu_ai_prediction" 
+              action="action_predict_sales_server" 
+              sequence="10"/>
+    
+    <menuitem id="menu_sales_recommend_products" 
+              name="¿Qué Comprar Este Mes?" 
+              parent="menu_ai_prediction" 
+              action="action_recommend_products_server" 
+              sequence="20"/>
+
+</odoo>

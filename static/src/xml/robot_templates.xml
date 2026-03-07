@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="sales.RobotComponent" owl="1">
+        <div class="robot-head-widget" style="margin: 20px auto; max-width: 700px;">
+            <!-- Robot Head Container -->
+            <div style="display: flex; gap: 20px; align-items: flex-start;">
+                <!-- Robot Head (Left Side) -->
+                <div style="flex-shrink: 0;">
+                    <div t-ref="root" 
+                         class="robot-head-canvas" 
+                         style="width: 200px; height: 200px; background: transparent; border-radius: 50%; overflow: visible;">
+                    </div>
+                    <div style="text-align: center; margin-top: 10px; font-size: 12px; color: #666;">
+                        <span style="display: inline-block; width: 8px; height: 8px; background: #4ade80; border-radius: 50%; margin-right: 6px; animation: pulse 2s infinite;"></span>
+                        Roby
+                    </div>
+                    <div style="text-align: center; margin-top: 5px; font-size: 10px; color: #999; font-style: italic;">
+                        ¡Estoy para ayudarte!
+                    </div>
+                </div>
+                
+                <!-- Chat Interface (Right Side) -->
+                <div style="flex: 1; background: #f8f9fa; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">
+                        <h4 style="margin: 0; color: #667eea; font-size: 16px;">Chatea con Roby</h4>
+                        <p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">Tu asistente inteligente de ventas 🤖</p>
+                    </div>
+                    
+                    <!-- Chat Messages -->
+                    <div class="chat-messages" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; padding: 10px; background: white; border-radius: 8px;">
+                        <t t-foreach="state.messages" t-as="msg" t-key="msg.id">
+                            <div t-att-class="'chat-message ' + msg.type" 
+                                 t-att-style="msg.type === 'bot' ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin: 8px 0; padding: 10px 15px; border-radius: 12px; max-width: 85%; float: left; clear: both;' : 'background: #e3f2fd; color: #333; margin: 8px 0; padding: 10px 15px; border-radius: 12px; max-width: 85%; float: right; clear: both;'">
+                                <div style="white-space: pre-line; line-height: 1.5; font-size: 13px;">
+                                    <t t-esc="msg.text"/>
+                                </div>
+                            </div>
+                        </t>
+                        <div style="clear: both;"></div>
+                    </div>
+                    
+                    <!-- Quick Questions -->
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-size: 11px; color: #666; margin-bottom: 5px;">Preguntas rápidas:</div>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            <button t-on-click="() => this.askQuestion('¿Cómo están las ventas?')"
+                                    style="background: white; border: 1px solid #667eea; color: #667eea; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; transition: all 0.2s;">
+                                📊 ¿Cómo están las ventas?
+                            </button>
+                            <button t-on-click="() => this.askQuestion('¿Qué debo comprar?')"
+                                    style="background: white; border: 1px solid #667eea; color: #667eea; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; transition: all 0.2s;">
+                                🛒 ¿Qué debo comprar?
+                            </button>
+                            <button t-on-click="() => this.askQuestion('¿Cuál es la tendencia?')"
+                                    style="background: white; border: 1px solid #667eea; color: #667eea; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; transition: all 0.2s;">
+                                📈 ¿Cuál es la tendencia?
+                            </button>
+                            <button t-on-click="() => this.askQuestion('¿Qué productos de temporada?')"
+                                    style="background: white; border: 1px solid #667eea; color: #667eea; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; transition: all 0.2s;">
+                                📅 Productos de temporada
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Input Area -->
+                    <div style="display: flex; gap: 10px;">
+                        <input t-ref="chatInput"
+                               type="text" 
+                               placeholder="Escribe tu pregunta..."
+                               t-on-keydown="onKeyDown"
+                               style="flex: 1; padding: 10px 15px; border: 2px solid #e0e0e0; border-radius: 20px; font-size: 13px; outline: none; transition: border-color 0.2s;"/>
+                        <button t-on-click="sendMessage"
+                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: 600; transition: transform 0.2s;">
+                            Enviar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

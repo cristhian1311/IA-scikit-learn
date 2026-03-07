@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sales_ai_prediction_user,sales.ai.prediction.user,model_sales_ai_prediction,base.group_user,1,1,1,1
+access_sales_ai_prediction_public,sales.ai.prediction.public,model_sales_ai_prediction,base.group_public,1,0,0,0
+access_sale_prediction_wizard,sale.prediction.wizard,model_sale_prediction_wizard,base.group_user,1,1,1,1
+access_sale_prediction_line,sale.prediction.line,model_sale_prediction_line,base.group_user,1,1,1,1
+access_product_recommendation_wizard,product.recommendation.wizard,model_product_recommendation_wizard,base.group_user,1,1,1,1
+access_product_recommendation_line,product.recommendation.line,model_product_recommendation_line,base.group_user,1,1,1,1
