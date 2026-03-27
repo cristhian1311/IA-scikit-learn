@@ -190,7 +190,8 @@ odoo.define('sales.prediction_charts', function(require) {
 
         _getPredictionData: function() {
             var form_data = this.state.data;
-            var period_filter = form_data.period_filter || '7days';
+            var date_from = form_data.date_from;
+            var date_to = form_data.date_to;
             
             // Obtener datos de líneas de predicción
             var prediction_lines = form_data.prediction_line_ids || [];
@@ -198,19 +199,22 @@ odoo.define('sales.prediction_charts', function(require) {
             var amounts = [];
             var total = 0;
 
-            // Limitar según el período seleccionado
-            var limit = 7;
-            if (period_filter === '1month') {
-                limit = 30;
-            } else if (period_filter === '3months') {
-                limit = 90;
-            }
+            // Determinar si aplicar filtro
+            var shouldFilter = date_from && date_to && date_from !== date_to;
 
             // Procesar líneas
             if (prediction_lines.data) {
                 prediction_lines.data.forEach(function(line, index) {
-                    if (index < limit) {
-                        dates.push(line.date || 'Día ' + (index + 1));
+                    var line_date = line.date;
+                    
+                    // Aplicar filtro solo si hay fechas válidas
+                    var includeLine = true;
+                    if (shouldFilter) {
+                        includeLine = (line_date >= date_from && line_date <= date_to);
+                    }
+                    
+                    if (includeLine) {
+                        dates.push(line_date);
                         var amount = line.predicted_amount || 0;
                         amounts.push(amount);
                         total += amount;
@@ -219,27 +223,59 @@ odoo.define('sales.prediction_charts', function(require) {
             }
 
             var average = amounts.length > 0 ? total / amounts.length : 0;
-            var period_names = {
-                '7days': 'Últimos 7 Días',
-                '1month': 'Próximo Mes',
-                '3months': 'Próximos 3 Meses'
-            };
+            
+            // Calcular nombre del período basado en fechas
+            var period_name = shouldFilter ? this._formatDateRange(date_from, date_to) : 'Todas las Predicciones';
 
             return {
                 dates: dates.length > 0 ? dates : ['Sin datos'],
                 amounts: amounts.length > 0 ? amounts : [0],
                 average: average,
-                period_name: period_names[period_filter] || 'Predicción',
-                period: period_filter
+                period_name: period_name,
+                date_from: date_from,
+                date_to: date_to
             };
+        },
+
+        _formatDateRange: function(date_from, date_to) {
+            // Convertir formato de fecha YYYY-MM-DD a formato legible
+            var from_parts = date_from.split('-');
+            var to_parts = date_to.split('-');
+            
+            var months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            var from_month = months[parseInt(from_parts[1]) - 1];
+            var to_month = months[parseInt(to_parts[1]) - 1];
+            var from_year = from_parts[0];
+            var to_year = to_parts[0];
+            
+            if (from_year === to_year) {
+                if (from_parts[1] === to_parts[1]) {
+                    // Mismo mes y año
+                    return from_parts[2] + ' - ' + to_parts[2] + ' ' + from_month + ' ' + from_year;
+                } else {
+                    // Diferente mes, mismo año
+                    return from_parts[2] + ' ' + from_month + ' - ' + to_parts[2] + ' ' + to_month + ' ' + from_year;
+                }
+            } else {
+                // Diferente año
+                return from_parts[2] + ' ' + from_month + ' ' + from_year + ' - ' + to_parts[2] + ' ' + to_month + ' ' + to_year;
+            }
         },
 
         _bindPeriodFilter: function() {
             var self = this;
-            var period_select = document.querySelector('[name="period_filter"]');
+            // Escuchar cambios en los campos de fecha
+            var date_from_input = document.querySelector('[name="date_from"]');
+            var date_to_input = document.querySelector('[name="date_to"]');
             
-            if (period_select) {
-                period_select.addEventListener('change', function() {
+            if (date_from_input) {
+                date_from_input.addEventListener('change', function() {
+                    self._renderPredictionChart();
+                });
+            }
+            
+            if (date_to_input) {
+                date_to_input.addEventListener('change', function() {
                     self._renderPredictionChart();
                 });
             }

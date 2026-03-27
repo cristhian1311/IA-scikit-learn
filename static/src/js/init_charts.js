@@ -153,7 +153,7 @@ odoo.define('sales.chart_init', function(require) {
             });
 
             console.log('✅ Gráfico renderizado exitosamente');
-            updateTableRows(data.limit);
+            updateTableRows();
         } catch (e) {
             console.error('❌ Error al renderizar gráfico:', e);
         }
@@ -186,12 +186,15 @@ odoo.define('sales.chart_init', function(require) {
 
         console.log('✅ Encontradas', treeRows.length, 'filas en el árbol');
 
-        var periodSelect = document.querySelector('select[name="period_filter"]');
-        var period = periodSelect ? periodSelect.value : '7days';
+        var dateFromInput = document.querySelector('input[name="date_from"]');
+        var dateToInput = document.querySelector('input[name="date_to"]');
+        var date_from = dateFromInput ? dateFromInput.value : '';
+        var date_to = dateToInput ? dateToInput.value : '';
         
-        var limit = 7;
-        if (period === '1month') limit = 30;
-        if (period === '3months') limit = 90;
+        // Si no hay fechas válidas, mostrar todos los datos sin filtrar
+        var shouldFilter = date_from && date_to && date_from !== date_to;
+        
+        console.log('📊 Filtro de fechas:', shouldFilter ? (date_from + ' a ' + date_to) : 'Sin filtro (mostrar todo)');
 
         var dates = [];
         var amounts = [];
@@ -199,29 +202,33 @@ odoo.define('sales.chart_init', function(require) {
 
         // Iterar sobre las filas encontradas
         treeRows.forEach(function(row, index) {
-            if (index < limit) {
-                // Intentar múltiples formas de obtener las celdas
-                var cells = row.querySelectorAll('td');
+            // Intentar múltiples formas de obtener las celdas
+            var cells = row.querySelectorAll('td');
+            
+            if (cells.length >= 2) {
+                var dateCell = cells[0];
+                var amountCell = cells[1];
                 
-                if (cells.length >= 2) {
-                    var dateCell = cells[0];
-                    var amountCell = cells[1];
+                if (dateCell && amountCell) {
+                    var date = dateCell.textContent.trim() || 'Día ' + (index + 1);
+                    var amountText = amountCell.textContent.trim();
                     
-                    if (dateCell && amountCell) {
-                        var date = dateCell.textContent.trim() || 'Día ' + (index + 1);
-                        var amountText = amountCell.textContent.trim();
+                    // Limpiar el texto del monto
+                    var amount = parseFloat(amountText.replace(/[^0-9.-]/g, '')) || 0;
+                    
+                    // Aplicar filtro solo si hay fechas válidas
+                    var includeRow = true;
+                    if (shouldFilter) {
+                        includeRow = (date >= date_from && date <= date_to);
+                    }
+                    
+                    if (includeRow && !isNaN(amount) && amount >= 0) {
+                        dates.push(date);
+                        amounts.push(amount);
+                        total += amount;
                         
-                        // Limpiar el texto del monto
-                        var amount = parseFloat(amountText.replace(/[^0-9.-]/g, '')) || 0;
-                        
-                        if (!isNaN(amount) && amount >= 0) {
-                            dates.push(date);
-                            amounts.push(amount);
-                            total += amount;
-                            
-                            if (index < 3) {
-                                console.log('📊 Fila', index, '- Fecha:', date, 'Monto:', amount);
-                            }
+                        if (index < 3) {
+                            console.log('📊 Fila', index, '- Fecha:', date, 'Monto:', amount);
                         }
                     }
                 }
@@ -229,19 +236,21 @@ odoo.define('sales.chart_init', function(require) {
         });
 
         if (amounts.length === 0) {
-            console.log('⚠️ Se encontraron filas pero sin datos válidos');
+            console.log('⚠️ No se encontraron datos válidos');
             return null;
         }
 
         var average = total / amounts.length;
-        var periodNames = {
-            '7days': 'Últimos 7 Días',
-            '1month': 'Próximo Mes',
-            '3months': 'Próximos 3 Meses'
-        };
+        var period_name = shouldFilter ? formatDateRange(date_from, date_to) : 'Todas las Predicciones';
 
         console.log('📋 Datos extraídos:', {
-            periodo: period,
+            rango: shouldFilter ? (date_from + ' a ' + date_to) : 'Sin filtro',
+            registros: amounts.length,
+            promedio: average.toFixed(2)
+        });
+
+        console.log('📋 Datos extraídos:', {
+            rango: date_from + ' a ' + date_to,
             registros: amounts.length,
             promedio: average.toFixed(2)
         });
@@ -250,37 +259,98 @@ odoo.define('sales.chart_init', function(require) {
             dates: dates,
             amounts: amounts,
             average: average,
-            period_name: periodNames[period] || 'Predicción',
-            limit: limit,
-            period: period
+            period_name: period_name,
+            date_from: date_from,
+            date_to: date_to
         };
     }
 
+    // Formatear rango de fechas
+    function formatDateRange(date_from, date_to) {
+        // Convertir formato de fecha YYYY-MM-DD a formato legible
+        var from_parts = date_from.split('-');
+        var to_parts = date_to.split('-');
+        
+        var months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        var from_month = months[parseInt(from_parts[1]) - 1];
+        var to_month = months[parseInt(to_parts[1]) - 1];
+        var from_year = from_parts[0];
+        var to_year = to_parts[0];
+        
+        if (from_year === to_year) {
+            if (from_parts[1] === to_parts[1]) {
+                // Mismo mes y año
+                return from_parts[2] + ' - ' + to_parts[2] + ' ' + from_month + ' ' + from_year;
+            } else {
+                // Diferente mes, mismo año
+                return from_parts[2] + ' ' + from_month + ' - ' + to_parts[2] + ' ' + to_month + ' ' + from_year;
+            }
+        } else {
+            // Diferente año
+            return from_parts[2] + ' ' + from_month + ' ' + from_year + ' - ' + to_parts[2] + ' ' + to_month + ' ' + to_year;
+        }
+    }
+
     // Actualizar visibilidad de filas
-    function updateTableRows(limit) {
+    function updateTableRows() {
+        var dateFromInput = document.querySelector('input[name="date_from"]');
+        var dateToInput = document.querySelector('input[name="date_to"]');
+        var date_from = dateFromInput ? dateFromInput.value : '';
+        var date_to = dateToInput ? dateToInput.value : '';
+        
+        // Si no hay fechas válidas, mostrar todas las filas
+        var shouldFilter = date_from && date_to && date_from !== date_to;
+        
         var treeRows = document.querySelectorAll('[data-model="sale.prediction.line"] tbody tr');
+        var visible = 0;
         var hidden = 0;
         
         treeRows.forEach(function(row, index) {
-            if (index < limit) {
+            if (!shouldFilter) {
+                // Mostrar todas las filas si no hay filtro
                 row.style.display = '';
+                visible++;
             } else {
-                row.style.display = 'none';
-                hidden++;
+                // Aplicar filtro por fechas
+                var cells = row.querySelectorAll('td');
+                if (cells && cells.length > 0) {
+                    var cell_text = cells[0].textContent.trim();
+                    
+                    // Verificar si la fecha está dentro del rango
+                    if (cell_text >= date_from && cell_text <= date_to) {
+                        row.style.display = '';
+                        visible++;
+                    } else {
+                        row.style.display = 'none';
+                        hidden++;
+                    }
+                }
             }
         });
         
-        if (hidden > 0) {
-            console.log('📊 Ocultadas', hidden, 'filas después de', limit);
-        }
+        console.log('📊 Filtradas filas - Visibles:', visible, 'Ocultas:', hidden, shouldFilter ? '(con filtro)' : '(sin filtro)');
     }
 
     // Configurar listeners para cambios
     function setupListeners() {
-        var periodSelect = document.querySelector('select[name="period_filter"]');
-        if (periodSelect) {
-            periodSelect.addEventListener('change', function() {
-                console.log('📊 Período cambiado a:', this.value);
+        var dateFromInput = document.querySelector('input[name="date_from"]');
+        var dateToInput = document.querySelector('input[name="date_to"]');
+        
+        if (dateFromInput) {
+            dateFromInput.addEventListener('change', function() {
+                console.log('📊 Fecha desde cambiada a:', this.value);
+                setTimeout(function() {
+                    var canvas = document.getElementById('prediction_chart');
+                    if (canvas) {
+                        renderChart(canvas);
+                    }
+                }, 100);
+            });
+        }
+        
+        if (dateToInput) {
+            dateToInput.addEventListener('change', function() {
+                console.log('📊 Fecha hasta cambiada a:', this.value);
                 setTimeout(function() {
                     var canvas = document.getElementById('prediction_chart');
                     if (canvas) {

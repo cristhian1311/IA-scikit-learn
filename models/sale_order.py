@@ -663,12 +663,12 @@ class SalesAIPrediction(models.Model):
         model_amount = LinearRegression()
         model_amount.fit(X, y_amount)
         
-        # Predecir próximos 30 días
+        # Predecir próximos 90 días 
         today = datetime.now().date()
         days_since_start = (today - base_date).days
         
         predictions = []
-        for i in range(1, 31):
+        for i in range(1, 91):  
             future_day = days_since_start + i
             pred_amount = max(0, model_amount.predict([[future_day]])[0])
             pred_date = today + timedelta(days=i)
@@ -691,8 +691,8 @@ class SalesAIPrediction(models.Model):
         else:
             trend = 'estable'
         
-        # Predicción mensual
-        monthly_prediction = sum([p['amount'] for p in predictions])
+        # Predicción para 30 días por defecto
+        monthly_prediction = sum([p['amount'] for p in predictions[:30]])
         
         # Calcular tasa de crecimiento
         if total_sales > 0:
@@ -700,8 +700,11 @@ class SalesAIPrediction(models.Model):
         else:
             growth_rate = 0
         
-        # Crear wizard
+        # Crear wizard con fechas por defecto: hoy hasta 30 días después
+        default_date_to = today + timedelta(days=30)
         wizard = self.env['sale.prediction.wizard'].create({
+            'date_from': today,
+            'date_to': default_date_to,
             'historical_total': total_sales,
             'historical_avg': avg_daily_sales,
             'historical_quantity': len(sales_by_date),  # Número de días con ventas
@@ -712,8 +715,8 @@ class SalesAIPrediction(models.Model):
             'growth_rate': growth_rate,
         })
         
-        # Crear líneas de predicción para 90 días (permite filtrar 7, 30, 90)
-        for pred in predictions[:90]:
+        # Crear líneas de predicción para los 90 días
+        for pred in predictions:
             self.env['sale.prediction.line'].create({
                 'wizard_id': wizard.id,
                 'date': pred['date'],
@@ -759,12 +762,9 @@ class SalePredictionWizard(models.TransientModel):
     # Líneas de predicción
     prediction_line_ids = fields.One2many('sale.prediction.line', 'wizard_id', string='Predicciones')
     
-    # Filtro de período
-    period_filter = fields.Selection([
-        ('7days', 'Últimos 7 Días'),
-        ('1month', 'Mes (30 Días)'),
-        ('3months', '3 Meses (90 Días)')
-    ], string='Filtrar Por', default='7days')
+    # Selector de fechas para rango personalizado
+    date_from = fields.Date(string='Fecha Desde', required=True, default=lambda self: fields.Date.today())
+    date_to = fields.Date(string='Fecha Hasta', required=True, default=lambda self: fields.Date.today() + timedelta(days=30))
     
     # Datos para gráficos (JSON)
     chart_data = fields.Text(string='Datos de Gráfico', help='Datos JSON para gráficos')

@@ -98,9 +98,16 @@
                     
                     <separator string="📊 Gráfico de Tendencias"/>
                     
-                    <!-- Selector de período para gráficos -->
+                    <!-- Selector de fechas en formato de calendario -->
                     <group>
-                        <field name="period_filter"/>
+                        <group>
+                            <label for="date_from" string="Período a Analizar:"/>
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <field name="date_from" nolabel="1" class="oe_inline" style="flex: 1;" widget="date"/>
+                                <span style="color: #666; font-weight: bold;">A</span>
+                                <field name="date_to" nolabel="1" class="oe_inline" style="flex: 1;" widget="date"/>
+                            </div>
+                        </group>
                     </group>
                     
                     <!-- Contenedor para gráfico -->
@@ -108,11 +115,7 @@
                         <canvas id="prediction_chart" width="800" height="400"></canvas>
                     </div>
                     
-                    <separator string="Detalle por Período"/>
-                    <group>
-                        <label for="period_filter" string="Mostrar:"/>
-                        <field name="period_filter" nolabel="1"/>
-                    </group>
+                    <separator string="Detalle por Período (Filtrado por Rango de Fechas)"/>
                     
                     <field name="prediction_line_ids" nolabel="1">
                         <tree create="false" delete="false" edit="false">

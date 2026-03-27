@@ -136,66 +136,136 @@ odoo.define('sales.chart_renderer', function(require) {
             });
 
             // Actualizar tabla de detalles
-            this._updateTableRows(chartData.limit);
+            this._updateTableRows();
         },
 
         _getChartData: function() {
             var data = this.state.data;
-            var period = data.period_filter || '7days';
+            var date_from = data.date_from;
+            var date_to = data.date_to;
             var lines = data.prediction_line_ids.data || [];
             
-            var limit = 7;
-            if (period === '1month') limit = 30;
-            if (period === '3months') limit = 90;
-
+            // Determinar si aplicar filtro
+            var shouldFilter = date_from && date_to && date_from !== date_to;
+            
             var dates = [];
             var amounts = [];
             var total = 0;
 
-            for (var i = 0; i < lines.length && i < limit; i++) {
+            // Filtrar líneas dentro del rango de fechas
+            for (var i = 0; i < lines.length; i++) {
                 var line = lines[i][2]; // Acceder a diccionario
                 if (line && line.date) {
-                    dates.push(line.date);
-                    var amount = parseFloat(line.predicted_amount) || 0;
-                    amounts.push(amount);
-                    total += amount;
+                    var line_date = line.date;
+                    
+                    // Aplicar filtro solo si hay fechas válidas
+                    var includeLine = true;
+                    if (shouldFilter) {
+                        includeLine = (line_date >= date_from && line_date <= date_to);
+                    }
+                    
+                    if (includeLine) {
+                        dates.push(line_date);
+                        var amount = parseFloat(line.predicted_amount) || 0;
+                        amounts.push(amount);
+                        total += amount;
+                    }
                 }
             }
 
             var avg = amounts.length > 0 ? total / amounts.length : 0;
-            var periodNames = {
-                '7days': 'Últimos 7 Días',
-                '1month': 'Próximo Mes',
-                '3months': 'Próximos 3 Meses'
-            };
+            var period_name = shouldFilter ? this._formatDateRange(date_from, date_to) : 'Todas las Predicciones';
 
             return {
                 dates: dates.length > 0 ? dates : ['Sin datos'],
                 amounts: amounts.length > 0 ? amounts : [0],
                 average: avg,
-                period_name: periodNames[period] || 'Predicción',
-                limit: limit
+                period_name: period_name,
+                date_from: date_from,
+                date_to: date_to
             };
         },
 
-        _updateTableRows: function(limit) {
-            // Ocultar/mostrar filas del árbol según el límite
+        _formatDateRange: function(date_from, date_to) {
+            // Convertir formato de fecha YYYY-MM-DD a formato legible
+            var from_parts = date_from.split('-');
+            var to_parts = date_to.split('-');
+            
+            var months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            var from_month = months[parseInt(from_parts[1]) - 1];
+            var to_month = months[parseInt(to_parts[1]) - 1];
+            var from_year = from_parts[0];
+            var to_year = to_parts[0];
+            
+            if (from_year === to_year) {
+                if (from_parts[1] === to_parts[1]) {
+                    // Mismo mes y año
+                    return from_parts[2] + ' - ' + to_parts[2] + ' ' + from_month + ' ' + from_year;
+                } else {
+                    // Diferente mes, mismo año
+                    return from_parts[2] + ' ' + from_month + ' - ' + to_parts[2] + ' ' + to_month + ' ' + from_year;
+                }
+            } else {
+                // Diferente año
+                return from_parts[2] + ' ' + from_month + ' ' + from_year + ' - ' + to_parts[2] + ' ' + to_month + ' ' + to_year;
+            }
+        },
+
+        _updateTableRows: function() {
+            var data = this.state.data;
+            var date_from = data.date_from;
+            var date_to = data.date_to;
+            
+            // Si no hay fechas válidas, mostrar todas las filas
+            var shouldFilter = date_from && date_to && date_from !== date_to;
+            
+            // Ocultar/mostrar filas del árbol según el rango de fechas
             var treeRows = document.querySelectorAll('[data-model="sale.prediction.line"] tbody tr');
             treeRows.forEach(function(row, index) {
-                row.style.display = index < limit ? '' : 'none';
+                if (!shouldFilter) {
+                    // Mostrar todas las filas si no hay filtro
+                    row.style.display = '';
+                } else {
+                    // Aplicar filtro por fechas
+                    var cells = row.querySelectorAll('td');
+                    if (cells && cells.length > 0) {
+                        var cell_text = cells[0].textContent.trim();
+                        
+                        // Verificar si la fecha está dentro del rango
+                        if (cell_text >= date_from && cell_text <= date_to) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                }
             });
         },
 
         _setupPeriodFilter: function() {
             var self = this;
             
-            // Escuchar cambios en el select de período
-            var periodSelect = self.$('select[name="period_filter"]');
-            periodSelect.on('change', function() {
-                setTimeout(function() {
-                    self._initChart();
-                }, 50);
-            });
+            // Escuchar cambios en los campos de fecha
+            var dateFromInput = self.$('input[name="date_from"]');
+            var dateToInput = self.$('input[name="date_to"]');
+            
+            if (dateFromInput.length) {
+                dateFromInput.on('change', function() {
+                    setTimeout(function() {
+                        self._initChart();
+                        self._updateTableRows();
+                    }, 50);
+                });
+            }
+            
+            if (dateToInput.length) {
+                dateToInput.on('change', function() {
+                    setTimeout(function() {
+                        self._initChart();
+                        self._updateTableRows();
+                    }, 50);
+                });
+            }
 
             // Escuchar cambios generales
             this.on_field_changed.add(function() {
