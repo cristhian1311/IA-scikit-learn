@@ -64,7 +64,7 @@
                     <field name="robot_display" widget="robot_assistant" nolabel="1"/>
                     
                     <div class="oe_title">
-                        <h1>🔮 Predicción de Ventas con IA</h1>
+                        <h1>Predicción de Ventas con IA</h1>
                     </div>
                     
                     <separator string="Datos Históricos (últimos 6 meses)"/>
@@ -135,7 +135,7 @@
                 </sheet>
                 <footer>
                     <button string="Cerrar" class="btn-primary" special="cancel"/>
-                    <button string="Exportar Datos" name="action_export_predictions" type="object" class="btn-secondary"/>
+                    <!-- <button string="Exportar Datos" name="action_export_predictions" type="object" class="btn-secondary"/> -->
                 </footer>
             </form>
         </field>

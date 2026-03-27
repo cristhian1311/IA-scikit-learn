@@ -64,7 +64,7 @@ odoo.define('sales.prediction_chart_widget', function(require) {
                     labels: data.dates,
                     datasets: [
                         {
-                            label: '📈 Ventas Predichas',
+                            label: 'Ventas Predichas',
                             data: data.amounts,
                             borderColor: '#1f77b4',
                             backgroundColor: 'rgba(31, 119, 180, 0.1)',
@@ -78,7 +78,7 @@ odoo.define('sales.prediction_chart_widget', function(require) {
                             pointHoverRadius: 8
                         },
                         {
-                            label: '📊 Promedio',
+                            label: 'Promedio',
                             data: Array(data.amounts.length).fill(data.average),
                             borderColor: '#ff7f0e',
                             borderDash: [5, 5],
@@ -107,7 +107,7 @@ odoo.define('sales.prediction_chart_widget', function(require) {
                         },
                         title: {
                             display: true,
-                            text: '🔮 Predicción de Ventas - ' + data.period_name,
+                            text: 'Predicción de Ventas - ' + data.period_name,
                             font: { size: 16, weight: 'bold' },
                             padding: 20,
                             color: '#333'

@@ -398,12 +398,12 @@ class RobotComponent extends Component {
         // ========== VENTAS DE HOY ==========
         if (lowerQuestion.match(/ventas.*hoy|hoy.*ventas|cómo va hoy|cuánto vendí hoy|ventas del día|día de hoy/)) {
             this.getTodaySales().then(data => {
-                let response = `📊 VENTAS DE HOY\n\n`;
+                let response = `VENTAS DE HOY\n\n`;
                 
                 if (data.success && data.count >= 0) {
-                    response += `📋 Órdenes: ${data.count}\n`;
-                    response += `💰 Total: S/. ${data.total.toFixed(2)}\n`;
-                    response += `📈 Promedio/orden: S/. ${data.average.toFixed(2)}\n\n`;
+                    response += `Órdenes: ${data.count}\n`;
+                    response += `Total: S/. ${data.total.toFixed(2)}\n`;
+                    response += `Promedio/orden: S/. ${data.average.toFixed(2)}\n\n`;
 
                     if (data.count > 0) {
                         if (data.count >= 10) response += `🚀 ¡Excelente! Día muy productivo\n\n`;
@@ -444,11 +444,11 @@ class RobotComponent extends Component {
             const growthRate = data.growth_rate || 0;
 
             if (trend === 'creciente') {
-                return `📈 ¡EXCELENTE NOTICIA!\n\nTus ventas están en TENDENCIA CRECIENTE (${growthRate.toFixed(1)}% ↑)\n\n✅ Esto significa:\n• Tus estrategias funcionan\n• Los clientes están comprando más\n• Tu inventario se está moviendo\n\n🎯 Mi recomendación:\n1. Mantén tu estrategia actual\n2. Aumenta stock de productos top\n3. Capitaliza el momentum con promociones\n\n¡Lo estás haciendo genial! 🚀`;
+                return `¡EXCELENTE NOTICIA!\n\nTus ventas están en TENDENCIA CRECIENTE (${growthRate.toFixed(1)}% ↑)\n\n✅ Esto significa:\n• Tus estrategias funcionan\n• Los clientes están comprando más\n• Tu inventario se está moviendo\n\n🎯 Mi recomendación:\n1. Mantén tu estrategia actual\n2. Aumenta stock de productos top\n3. Capitaliza el momentum con promociones\n\n¡Lo estás haciendo genial! 🚀`;
             } else if (trend === 'decreciente') {
-                return `📉 Veo que tus ventas están bajando (${Math.abs(growthRate).toFixed(1)}% ↓)\n\n⚠️ Pero no te preocupes, aquí van mis recomendaciones:\n\n1. 🎯 Analiza qué cambió\n   - ¿Subieron precios?\n   - ¿Temporada baja?\n   - ¿Competencia nueva?\n\n2. 💡 Toma acción:\n   - Revisa tus precios vs mercado\n   - Lanza promociones estratégicas\n   - Publica en redes sociales\n\n3. 📊 Enfócate en productos estrella\n   - Descuenta productos lentos\n   - Promociona productos top\n\n¿Quieres que te recomiende qué hacer? 💪`;
+                return `Veo que tus ventas están bajando (${Math.abs(growthRate).toFixed(1)}% ↓)\n\n⚠️ Pero no te preocupes, aquí van mis recomendaciones:\n\n1. 🎯 Analiza qué cambió\n   - ¿Subieron precios?\n   - ¿Temporada baja?\n   - ¿Competencia nueva?\n\n2. 💡 Toma acción:\n   - Revisa tus precios vs mercado\n   - Lanza promociones estratégicas\n   - Publica en redes sociales\n\n3. 📊 Enfócate en productos estrella\n   - Descuenta productos lentos\n   - Promociona productos top\n\n¿Quieres que te recomiende qué hacer? 💪`;
             } else {
-                return `📊 Tus ventas están ESTABLES\n\nNo hay cambios significativos en el último período.\n\n💡 Esto es buen momento para:\n✅ Innovar: Prueba nuevos productos\n✅ Marketing: Amplía tu alcance\n✅ Experiencia: Mejora servicio al cliente\n✅ Temporada: Prepárate para próximas fechas especiales\n\n¿Quieres que te ayude a planificar algo específico? 🎯`;
+                return `Tus ventas están ESTABLES\n\nNo hay cambios significativos en el último período.\n\n💡 Esto es buen momento para:\n✅ Innovar: Prueba nuevos productos\n✅ Marketing: Amplía tu alcance\n✅ Experiencia: Mejora servicio al cliente\n✅ Temporada: Prepárate para próximas fechas especiales\n\n¿Quieres que te ayude a planificar algo específico? 🎯`;
             }
         }
 
