@@ -120,7 +120,7 @@ odoo.define('sales.chart_renderer', function(require) {
                             },
                             ticks: {
                                 callback: function(value) {
-                                    return '$' + value.toFixed(0);
+                                    return 'S/' + value.toFixed(0);
                                 }
                             }
                         },
