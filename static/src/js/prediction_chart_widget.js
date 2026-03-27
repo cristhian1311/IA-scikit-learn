@@ -118,7 +118,7 @@ odoo.define('sales.prediction_chart_widget', function(require) {
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Monto (USD)',
+                                text: 'Monto',
                                 font: { weight: 'bold' }
                             },
                             ticks: {

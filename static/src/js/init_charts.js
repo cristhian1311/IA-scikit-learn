@@ -132,7 +132,7 @@ odoo.define('sales.chart_init', function(require) {
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Monto (USD)',
+                                text: 'Monto',
                                 font: { weight: 'bold' }
                             },
                             ticks: {

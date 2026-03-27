@@ -151,7 +151,7 @@ odoo.define('sales.prediction_charts', function(require) {
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Monto (USD)',
+                                text: 'Monto',
                                 font: { size: 12, weight: 'bold' },
                                 color: '#666'
                             },
