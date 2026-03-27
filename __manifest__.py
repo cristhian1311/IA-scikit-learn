@@ -11,10 +11,12 @@
     ],
     'assets': {
         'web.assets_backend': [
-            # Template XML (debe cargarse primero)
+            # Templates XML
             'sales/static/src/xml/robot_templates.xml',
             # Robot widget (carga THREE.js desde CDN automáticamente)
             'sales/static/src/js/robot_init.js',
+            # Inicialización de gráficos de predicción
+            'sales/static/src/js/init_charts.js',
             # CSS
             'sales/static/src/css/robot.css',
         ],

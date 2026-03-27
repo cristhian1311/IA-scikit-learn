@@ -712,8 +712,8 @@ class SalesAIPrediction(models.Model):
             'growth_rate': growth_rate,
         })
         
-        # Crear líneas de predicción (primeros 7 días)
-        for pred in predictions[:7]:
+        # Crear líneas de predicción para 90 días (permite filtrar 7, 30, 90)
+        for pred in predictions[:90]:
             self.env['sale.prediction.line'].create({
                 'wizard_id': wizard.id,
                 'date': pred['date'],
@@ -758,6 +758,16 @@ class SalePredictionWizard(models.TransientModel):
     
     # Líneas de predicción
     prediction_line_ids = fields.One2many('sale.prediction.line', 'wizard_id', string='Predicciones')
+    
+    # Filtro de período
+    period_filter = fields.Selection([
+        ('7days', 'Últimos 7 Días'),
+        ('1month', 'Mes (30 Días)'),
+        ('3months', '3 Meses (90 Días)')
+    ], string='Filtrar Por', default='7days')
+    
+    # Datos para gráficos (JSON)
+    chart_data = fields.Text(string='Datos de Gráfico', help='Datos JSON para gráficos')
     
     # Campo técnico
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)

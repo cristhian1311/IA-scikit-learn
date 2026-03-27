@@ -311,6 +311,62 @@
     }
 }
 
+/* Prediction Chart Styles */
+#sale_prediction_chart {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+#prediction_chart {
+    max-height: 400px;
+}
+
+.o_prediction_charts {
+    width: 100%;
+}
+
+/* Period Filter Styling */
+[data-field="period_filter"] {
+    min-width: 200px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+[data-field="period_filter"]:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+[data-field="period_filter"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Chart Animation */
+.chart-fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+    }
+}
+
 /* Model Metrics Display */
 .model-metrics {
     display: flex;
