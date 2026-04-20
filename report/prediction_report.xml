@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════
+         ACCIÓN DEL REPORTE
+         IMPORTANTE: Cambia 'sales' por el nombre técnico
+         de tu módulo (= nombre de la carpeta del addon)
+    ═══════════════════════════════════════════════════ -->
+    <record id="action_report_sale_prediction" model="ir.actions.report">
+        <field name="name">Predicción de Ventas</field>
+        <field name="model">sale.prediction.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sales.report_sale_prediction</field>
+        <field name="report_file">sales.report_sale_prediction</field>
+        <field name="binding_model_id" ref="model_sale_prediction_wizard"/>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════
+         TEMPLATE QWEB DEL REPORTE PDF
+    ═══════════════════════════════════════════════════ -->
+    <template id="report_sale_prediction">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+
+                    <!-- ── ENCABEZADO ── -->
+                    <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #667eea; padding-bottom: 20px;">
+                        <h1 style="color: #667eea; font-size: 26px; margin: 0;">
+                            Reporte de Prediccion de Ventas con IA
+                        </h1>
+                    </div>
+
+                    <!-- ── TARJETAS DE MÉTRICAS ── -->
+                    <table style="width: 100%; border-collapse: separate; border-spacing: 8px; margin-bottom: 25px;">
+                        <tr>
+                            <!-- Total Histórico -->
+                            <td style="background: #667eea; color: white; border-radius: 8px; padding: 14px 10px; text-align: center; width: 20%;">
+                                <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.85;">Total Historico</div>
+                                <div style="font-size: 18px; font-weight: bold; margin-top: 5px;">
+                                    S/ <t t-esc="'%.2f' % (docs.historical_total or 0)"/>
+                                </div>
+                            </td>
+                            <!-- Total Predicho -->
+                            <td style="background: #11998e; color: white; border-radius: 8px; padding: 14px 10px; text-align: center; width: 20%;">
+                                <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.85;">Total Predicho (30d)</div>
+                                <div style="font-size: 18px; font-weight: bold; margin-top: 5px;">
+                                    S/ <t t-esc="'%.2f' % (docs.total_predicted or 0)"/>
+                                </div>
+                            </td>
+                            <!-- Promedio Diario -->
+                            <td style="background: #f5576c; color: white; border-radius: 8px; padding: 14px 10px; text-align: center; width: 20%;">
+                                <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.85;">Promedio Diario</div>
+                                <div style="font-size: 18px; font-weight: bold; margin-top: 5px;">
+                                    S/ <t t-esc="'%.2f' % (docs.avg_daily or 0)"/>
+                                </div>
+                            </td>
+                            <!-- Tendencia -->
+                            <td style="border-radius: 8px; padding: 14px 10px; text-align: center; width: 20%;"
+                                t-att-style="'background: #43e97b; color: white; border-radius: 8px; padding: 14px 10px; text-align: center; width: 20%;' if docs.trend == 'creciente' else ('background: #f7971e; color: white; border-radius: 8px; padding: 14px 10px; text-align: center; width: 20%;' if docs.trend == 'estable' else 'background: #f5365c; color: white; border-radius: 8px; padding: 14px 10px; text-align: center; width: 20%;')">
+                                <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.85;">Tendencia</div>
+                                <div style="font-size: 18px; font-weight: bold; margin-top: 5px;">
+                                    <t t-if="docs.trend == 'creciente'">Creciente</t>
+                                    <t t-elif="docs.trend == 'decreciente'">Decreciente</t>
+                                    <t t-else="">Estable</t>
+                                </div>
+                            </td>
+                            <!-- Tasa Crecimiento -->
+                            <td style="background: #2d3748; color: white; border-radius: 8px; padding: 14px 10px; text-align: center; width: 20%;">
+                                <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.85;">Tasa Crecimiento</div>
+                                <div style="font-size: 18px; font-weight: bold; margin-top: 5px;">
+                                        <t t-esc="str(round(docs.growth_rate or 0, 1)) + '%'"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ── PERÍODO ANALIZADO ── -->
+                    <div style="background: #f8f9ff; border-left: 4px solid #667eea; padding: 10px 16px; margin-bottom: 22px; border-radius: 0 6px 6px 0;">
+                        <strong style="color: #667eea;">Periodo analizado:</strong>
+                        <span style="margin-left: 8px; color: #444;">
+                            <t t-esc="str(docs.date_from) if docs.date_from else 'N/A'"/>
+                        </span>
+                        <span style="margin: 0 8px; color: #667eea;">→</span>
+                        <span style="color: #444;">
+                            <t t-esc="str(docs.date_to) if docs.date_to else 'N/A'"/>
+                        </span>
+                        <span style="margin-left: 20px; color: #667eea;"><strong>Dias historicos:</strong></span>
+                        <span style="margin-left: 8px; color: #444;">
+                            <t t-esc="int(docs.historical_quantity or 0)"/>
+                        </span>
+                    </div>
+
+                    <!-- ── GRÁFICO (imagen generada por matplotlib en Python) ── -->
+                    <div style="margin-bottom: 28px;">
+                        <h3 style="color: #333; font-size: 15px; border-bottom: 2px solid #eee; padding-bottom: 6px; margin-bottom: 12px;">
+                            Grafico de Prediccion de Ventas
+                        </h3>
+                        <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; background: white; text-align: center;">
+                            <t t-if="docs.chart_image">
+                                <img t-att-src="'data:image/png;base64,' + docs.chart_image"
+                                    style="max-width: 100%; height: auto;"/>
+                            </t>
+                            <t t-else="">
+                                <p style="color: #999; font-style: italic; padding: 40px 0;">
+                                    Grafico no disponible
+                                </p>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- ── TABLA DE PREDICCIONES ── -->
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="color: #333; font-size: 15px; border-bottom: 2px solid #eee; padding-bottom: 6px; margin-bottom: 12px;">
+                            Detalle de Predicciones
+                            <span style="font-size: 11px; color: #888; font-weight: normal; margin-left: 8px;">
+                                (primeros 60 registros del periodo)
+                            </span>
+                        </h3>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <thead>
+                                <tr style="background: #667eea; color: white;">
+                                    <th style="padding: 9px 12px; text-align: left; width: 8%;">#</th>
+                                    <th style="padding: 9px 12px; text-align: left; width: 35%;">Fecha</th>
+                                    <th style="padding: 9px 12px; text-align: right; width: 32%;">Monto Predicho</th>
+                                    <th style="padding: 9px 12px; text-align: right; width: 25%;">Cant. Predicha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filtrar líneas dentro del rango de fechas -->
+                                <t t-foreach="docs.prediction_line_ids.filtered(lambda l: l.date and docs.date_from and docs.date_to and docs.date_from &lt;= l.date &lt;= docs.date_to)" t-as="line">
+                                    <tr t-att-style="'background: #f4f5ff;' if line_index % 2 == 0 else 'background: white;'">
+                                        <td style="padding: 7px 12px; border-bottom: 1px solid #eee; color: #999;">
+                                            <t t-esc="line_index + 1"/>
+                                        </td>
+                                        <td style="padding: 7px 12px; border-bottom: 1px solid #eee; font-weight: 500;">
+                                            <t t-esc="str(line.date) if line.date else ''"/>
+                                        </td>
+                                        <td style="padding: 7px 12px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #667eea;">
+                                            S/ <t t-esc="'%.2f' % (line.predicted_amount or 0)"/>
+                                        </td>
+                                        <td style="padding: 7px 12px; border-bottom: 1px solid #eee; text-align: right;">
+                                            <t t-esc="'%.0f' % (line.predicted_quantity or 0)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <!-- TFOOT usa el campo computado filtered_total -->
+                            <tfoot>
+                                <tr style="background: #2d3748; color: white; font-weight: bold;">
+                                    <td colspan="2" style="padding: 9px 12px;">
+                                        TOTAL (periodo filtrado)
+                                    </td>
+                                    <td style="padding: 9px 12px; text-align: right;">
+                                        S/ <t t-esc="'%.2f' % (docs.filtered_total or 0)"/>
+                                    </td>
+                                    <td style="padding: 9px 12px; text-align: right;">—</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- ── NOTA AL PIE ── -->
+                    <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 10px 14px; font-size: 11px; color: #92400e;">
+                        <strong>Aviso:</strong> Las predicciones son estimaciones estadisticas basadas en
+                        regresion lineal sobre el historial de ventas POS. No constituyen garantia de
+                        resultados futuros. Factores externos (festividades, competencia, economia)
+                        pueden afectar los valores reales.
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

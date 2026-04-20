@@ -5,3 +5,4 @@ access_sale_prediction_wizard,sale.prediction.wizard,model_sale_prediction_wizar
 access_sale_prediction_line,sale.prediction.line,model_sale_prediction_line,base.group_user,1,1,1,1
 access_product_recommendation_wizard,product.recommendation.wizard,model_product_recommendation_wizard,base.group_user,1,1,1,1
 access_product_recommendation_line,product.recommendation.line,model_product_recommendation_line,base.group_user,1,1,1,1
+access_sale_prediction_weekly,sale.prediction.weekly,model_sale_prediction_weekly,base.group_user,1,1,1,1

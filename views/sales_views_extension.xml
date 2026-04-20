@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Extensión de vistas para agregar botón de generación de datos históricos
+    Copiar este contenido en sales/views/sales_views.xml dentro del bloque <odoo>
+-->
+<odoo>
+    
+    <!-- ========== VISTAS MODIFICADAS ========== -->
+    
+    <!-- Modificar vista si ya existe, o crear nueva -->
+    <!-- Esta es una vista de ejemplo para SalesAIPrediction -->
+    <record id="sales_ai_prediction_form_extended" model="ir.ui.view">
+        <field name="name">sales.ai.prediction.form.extended</field>
+        <field name="model">sales.ai.prediction</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Botón para generar datos históricos -->
+                        <button 
+                            name="generate_historical_orders" 
+                            type="object" 
+                            string="📊 Generar 10k Órdenes"
+                            class="oe_stat_button"
+                            icon="fa-bar-chart"/>
+                    </div>
+                    
+                    <h1>Recomendador de Ventas con IA</h1>
+                    
+                    <group>
+                        <field name="name"/>
+                        <field name="date"/>
+                        <field name="product_id"/>
+                        <field name="quantity"/>
+                        <field name="state"/>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Detalles">
+                            <group>
+                                <field name="unit_price"/>
+                                <field name="total_price"/>
+                            </group>
+                            <field name="notes" placeholder="Notas adicionales"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+</odoo>
