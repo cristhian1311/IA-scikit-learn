@@ -8,6 +8,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/sales_views.xml',
+        'report/prediction_report.xml',   # ← AGREGAR esta línea
     ],
     'assets': {
         'web.assets_backend': [
@@ -15,8 +16,6 @@
             'sales/static/src/xml/robot_templates.xml',
             # Robot widget (carga THREE.js desde CDN automáticamente)
             'sales/static/src/js/robot_init.js',
-            # Inicialización de gráficos de predicción
-            'sales/static/src/js/init_charts.js',
             # CSS
             'sales/static/src/css/robot.css',
         ],

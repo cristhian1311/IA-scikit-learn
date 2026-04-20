@@ -60,15 +60,14 @@
         <field name="arch" type="xml">
             <form string="Predicción de Ventas con IA">
                 <sheet>
-                    <!-- 🤖 WIDGET DEL ROBOT - ESTO ES LO NUEVO -->
+                    <!-- Widget del Robot -->
                     <field name="robot_display" widget="robot_assistant" nolabel="1"/>
-                    
+
                     <div class="oe_title">
                         <h1>Predicción de Ventas con IA</h1>
                     </div>
-                    
+
                     <separator string="Datos Históricos (últimos 6 meses)"/>
-                    
                     <group>
                         <group>
                             <field name="historical_total" widget="monetary"/>
@@ -76,15 +75,14 @@
                         </group>
                         <group>
                             <field name="historical_quantity"/>
-                            <field name="trend" 
-                                   decoration-success="trend == 'creciente'"
-                                   decoration-danger="trend == 'decreciente'"
-                                   decoration-info="trend == 'estable'"/>
+                            <field name="trend"
+                                decoration-success="trend == 'creciente'"
+                                decoration-danger="trend == 'decreciente'"
+                                decoration-info="trend == 'estable'"/>
                         </group>
                     </group>
-                    
+
                     <separator string="Predicción Próximos 30 Días"/>
-                    
                     <group>
                         <group>
                             <field name="total_predicted" widget="monetary"/>
@@ -95,47 +93,64 @@
                             <field name="growth_rate" widget="percentage"/>
                         </group>
                     </group>
-                    
-                    <separator string="📊 Gráfico de Tendencias"/>
-                    
-                    <!-- Selector de fechas en formato de calendario -->
+
+                    <separator string="Período a Analizar"/>
+
+                    <!-- Aviso de restricción de fechas -->
+                    <div class="alert alert-warning" role="alert" style="margin-bottom: 12px;">
+                        <i class="fa fa-calendar-times-o" style="margin-right: 6px;"/>
+                        <strong>Importante:</strong>
+                        Solo puedes seleccionar fechas <strong>futuras</strong> (desde hoy en adelante).
+                        La fecha de fin debe ser mayor o igual a la fecha de inicio.
+                        Pulsa <strong>"Actualizar Gráfico y Líneas"</strong> para aplicar el filtro.
+                    </div>
+
                     <group>
                         <group>
-                            <label for="date_from" string="Período a Analizar:"/>
-                            <div style="display: flex; gap: 15px; align-items: center;">
-                                <field name="date_from" nolabel="1" class="oe_inline" style="flex: 1;" widget="date"/>
-                                <span style="color: #666; font-weight: bold;">A</span>
-                                <field name="date_to" nolabel="1" class="oe_inline" style="flex: 1;" widget="date"/>
-                            </div>
+                            <field name="date_from" widget="date"/>
+                            <field name="date_to" widget="date"/>
                         </group>
                     </group>
-                    
-                    <!-- Contenedor para gráfico -->
-                    <div id="chart_container" style="width: 100%; height: 400px; background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin: 20px 0;">
-                        <canvas id="prediction_chart" width="800" height="400"></canvas>
+
+                    <!-- Botón para aplicar el filtro y regenerar el gráfico -->
+                    <div class="text-center" style="margin-bottom: 16px;">
+                        <button string="🔄 Actualizar Gráfico y Líneas"
+                                name="action_update_chart"
+                                type="object"
+                                class="btn-primary"/>
                     </div>
-                    
-                    <separator string="Detalle por Período (Filtrado por Rango de Fechas)"/>
-                    
-                    <field name="prediction_line_ids" nolabel="1">
+
+                    <separator string="Detalle de Predicciones"/>
+                    <!-- DESPUÉS -->
+                    <field name="filtered_line_ids" nolabel="1">
                         <tree create="false" delete="false" edit="false">
-                            <field name="date"/>
+                            <field name="date" string="Fecha"/>
+                            <field name="week_label" string="Semana"/>
                             <field name="predicted_amount" widget="monetary" sum="Total"/>
                             <field name="predicted_quantity" sum="Total Unidades"/>
                         </tree>
                     </field>
-                    
+
+                    <!-- Campo técnico oculto -->
+                    <field name="chart_data" invisible="1"/>
+
                     <div class="alert alert-info" role="alert">
                         <p>
-                            ℹ️ <strong>Nota:</strong> Las predicciones se basan en el análisis de tendencias históricas 
-                            usando Machine Learning (Regresión Lineal). Los resultados son estimaciones 
-                            estadísticas y pueden variar según factores externos del mercado.
+                            ℹ️ <strong>Nota:</strong> Las predicciones se basan en análisis de
+                            tendencias históricas usando Machine Learning (Regresión Lineal).
+                            Los resultados son estimaciones estadísticas y pueden variar según
+                            factores externos del mercado.
                         </p>
                     </div>
                 </sheet>
                 <footer>
-                    <button string="Cerrar" class="btn-primary" special="cancel"/>
-                    <!-- <button string="Exportar Datos" name="action_export_predictions" type="object" class="btn-secondary"/> -->
+                    <button string="Exportar PDF con Gráfico"
+                            name="action_export_pdf"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cerrar"
+                            class="btn-secondary"
+                            special="cancel"/>
                 </footer>
             </form>
         </field>
@@ -168,7 +183,6 @@
                     
                     <separator string="✨ Recomendaciones Basadas en Datos Históricos" attrs="{'invisible': [('has_historical_data', '=', False)]}"/>
                     <separator string="✨ Recomendaciones Estacionales" attrs="{'invisible': [('has_historical_data', '=', True)]}"/>
-                    
                     <field name="recommendation_line_ids" nolabel="1">
                         <tree create="false" delete="false" edit="false">
                             <field name="rank" string="#"/>
@@ -181,7 +195,7 @@
                             <field name="reason" attrs="{'invisible': [('recommendation_type', '!=', 'seasonal')]}"/>
                         </tree>
                     </field>
-                    
+
                     <div class="alert alert-warning" role="alert" attrs="{'invisible': [('has_historical_data', '=', True)]}">
                         <p>
                             ⚠️ <strong>Sin datos históricos:</strong> No hay ventas del mismo mes del año anterior. 
@@ -240,8 +254,6 @@ action = model.action_recommend_products_from_menu()
     </record>
 
     <!-- Menús -->
-    
-    <!-- Menú independiente para IA y Predicción -->
     <menuitem id="menu_ai_prediction" 
               name="🤖 Inteligencia Artificial" 
               sequence="1"/>
